@@ -1,0 +1,3 @@
+pyvmomi
+jinja2
+jsonschema
