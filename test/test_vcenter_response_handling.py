@@ -1,40 +1,75 @@
+import json
 import jsonschema
+import os
 import random
 import string
+import tempfile
 from pyVmomi import vim
 from unittest.mock import patch
 from unittest.mock import MagicMock
+import pytest
+import vcenter_info
 from vcenter_info import vcenter
 
+VERSION_RESPONSE_SCHEMA = {
+    '$schema': 'http://json-schema.org/draft-07/schema#',
+    'type': 'object',
+    'properties': {
+        'api': {'type': 'string'},
+        'module': {'type': ['string','null']}
+    },
+    'required': ['api', 'module'],
+    'additionalProperties': False
 
+}
 VMLIST_SCHEMA = {
-    "$schema": "http://json-schema.org/draft-07/schema#",
+    '$schema': 'http://json-schema.org/draft-07/schema#',
 
-    "definitions": {
-        "vm": {
-            "type": "object",
-            "properties": {
-                "annotation": {"type": "string"},
-                "datacenter": {"type": "string"},
-                "guest": {"type": "string"},
-                "ip": {"type": ["string", "null"]},
-                "name": {"type": "string"},
-                "path": {"type": "string"},
-                "question": {"type": ["string", "null"]},
-                "san": {"type": ["string", "null"]},
-                "state": {"type": "string"},
+    'definitions': {
+        'vm': {
+            'type': 'object',
+            'properties': {
+                'annotation': {'type': 'string'},
+                'datacenter': {'type': 'string'},
+                'guest': {'type': 'string'},
+                'ip': {'type': ['string', 'null']},
+                'name': {'type': 'string'},
+                'path': {'type': 'string'},
+                'question': {'type': ['string', 'null']},
+                'san': {'type': ['string', 'null']},
+                'state': {'type': 'string'},
             },
-            "required": [
-                "annotation", "datacenter", "guest",
-                "ip", "name", "path", "question", "san", "state"],
-            "additionalProperties": False
+            'required': [
+                'annotation', 'datacenter', 'guest',
+                'ip', 'name', 'path', 'question', 'san', 'state'],
+            'additionalProperties': False
         }
     },
 
-    "type": "array",
-    "items": {"$ref": "#/definitions/vm"}
+    'type': 'array',
+    'items': {'$ref': '#/definitions/vm'}
 
 }
+
+
+@pytest.fixture
+def client():
+    def _dc():
+        return {
+            'hostname': _random_string(20),
+            'username': _random_string(20),
+            'password': _random_string(20)
+        }
+
+    config_params = [_dc() for _ in range(10)]
+
+    with tempfile.NamedTemporaryFile() as f:
+        f.write(json.dumps(config_params).encode('utf-8'))
+        f.flush()
+        os.environ['CONFIG_FILENAME'] = f.name
+        with vcenter_info.create_app().test_client() as c:
+            yield c
+
 class Object(object):
     pass
 
@@ -112,12 +147,26 @@ def mocked_SmartConnect(*args, **kwargs):
     return si
 
 
-def mocked_Disconnect(si):
-    pass
-
-
 @patch('vcenter_info.vcenter.SmartConnect', mocked_SmartConnect)
 @patch('vcenter_info.vcenter.Disconnect', lambda si: None)
 def test_vcenter_content_parsing():
     values = vcenter.get_vms(AUTH_CONFIG)
     jsonschema.validate(list(values), VMLIST_SCHEMA)
+
+
+def test_version_api_response(client):
+    rv = client.get('/api/version', headers={'Accept': ['application/json']})
+    assert rv.status_code == 200
+    assert rv.is_json
+    response_data = json.loads(rv.data.decode('utf-8'))
+    jsonschema.validate(response_data, VERSION_RESPONSE_SCHEMA)
+
+
+@patch('vcenter_info.vcenter.SmartConnect', mocked_SmartConnect)
+@patch('vcenter_info.vcenter.Disconnect', lambda si: None)
+def test_vmlist_api_response(client):
+    rv = client.get('/api/vms', headers={'Accept': ['application/json']})
+    assert rv.status_code == 200
+    assert rv.is_json
+    response_data = json.loads(rv.data.decode('utf-8'))
+    jsonschema.validate(response_data, VMLIST_SCHEMA)
