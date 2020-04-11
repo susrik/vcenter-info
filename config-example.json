@@ -1,0 +1,12 @@
+[
+  {
+    "hostname": "vcenter.domain",
+    "username": "username",
+    "password": "XXXXXXXXXXXXX"
+  },
+  {
+    "hostname": "another-vcenter.domain",
+    "username": "another-username",
+    "password": "XXXXXXXXXXXX"
+  }
+]
