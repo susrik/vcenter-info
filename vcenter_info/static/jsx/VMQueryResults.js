@@ -14,24 +14,19 @@ class VMQueryResults extends React.Component {
     async loadVMs() {
       console.log('starting loadVMs()');
 
-      var dummy_vms = [
-        { datacenter: "datacenter #1", name: "vm #1 name", state: "vm #1 state", annotation: "vm #1 annotation" },
-        { datacenter: "datacenter #2", name: "vm #2 name", state: "vm #2 state", annotation: "vm #2 annotation" }
-      ];
+      const response = await fetch(
+          window.location.origin + '/api/vms'
+      );
 
-      this.state.vms = dummy_vms.map(x => (
-          <table>
-          <VM info={x}/>
-          </table>
-        ));
+      const rsp_json = await response.json();
+      this.setState({
+          vms: rsp_json.map(vm => (
+              <table>
+                  <VM info={vm}/>
+              </table>
+          ))
+      });
 
-      // this.setState({
-      //   vms: dummy_vms.map(x => (
-      //     <table>
-      //     <VM info={x}/>
-      //     </table>
-      //   ))
-      // });
     }
 
     render() {
