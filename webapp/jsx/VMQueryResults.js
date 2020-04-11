@@ -19,13 +19,19 @@ class VMQueryResults extends React.Component {
         { datacenter: "datacenter #2", name: "vm #2 name", state: "vm #2 state", annotation: "vm #2 annotation" }
       ];
 
-      this.setState({
-        vms: dummy_vms.map(x => (
+      this.state.vms = dummy_vms.map(x => (
           <table>
           <VM info={x}/>
           </table>
-        ))
-      });
+        ));
+
+      // this.setState({
+      //   vms: dummy_vms.map(x => (
+      //     <table>
+      //     <VM info={x}/>
+      //     </table>
+      //   ))
+      // });
     }
 
     render() {
