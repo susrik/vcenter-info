@@ -52,7 +52,7 @@ class VMQueryResults extends React.Component {
               >
                 <FilteringState defaultFilters={[]} />
                 <IntegratedFiltering />
-                <SortingState defaultSorting={[]} />
+                <SortingState defaultSorting={[{ columnName: 'name', direction: 'asc' }]} />
                 <IntegratedSorting />
                 <Table />
                 <TableHeaderRow showSortingControls />
