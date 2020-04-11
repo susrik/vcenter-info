@@ -3,9 +3,9 @@ const path = require('path');
 require("babel-polyfill");
 
 module.exports = {
-  entry: ['babel-polyfill', './webapp/jsx/main.js'],
+  entry: ['babel-polyfill', './vcenter_info/static/jsx/main.js'],
   output: {
-    path: path.resolve(__dirname, 'webapp/js'),
+    path: path.resolve(__dirname, 'vcenter_info/static/js'),
     filename: 'bundle.js'
   },
   module: {
