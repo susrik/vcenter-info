@@ -10,6 +10,7 @@ import jsonschema
 
 logger = logging.getLogger(__name__)
 CONFIG_ENV_VAR_NAME = 'CONFIG_FILENAME'
+DEBUG_ENV_VM_LIST_FILENAME = 'DEBUG_VM_LIST'
 
 CONFIG_SCHEMA = {
     "$schema": "http://json-schema.org/draft-07/schema#",
@@ -52,6 +53,9 @@ def create_app():
     app = Flask(__name__)
     app.secret_key = 'super secret session key'
     app.config['VCENTER_PARAMS'] = config
+
+    if DEBUG_ENV_VM_LIST_FILENAME in os.environ:
+        app.config['DEBUG_VM_LIST'] = os.environ[DEBUG_ENV_VM_LIST_FILENAME]
 
     from vcenter_info import api
     app.register_blueprint(api.blueprint, url_prefix='/api')

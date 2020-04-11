@@ -1,4 +1,5 @@
 import functools
+import json
 import logging
 
 from flask import Blueprint, jsonify, request, \
@@ -47,17 +48,15 @@ def version():
 @require_accepts_json
 def vms():
     logger.debug('getting vms')
-    config = current_app.config['VCENTER_PARAMS']
 
-    # dc_names = [dc['hostname'] for dc in config]
-    # def _dummy_vm(id):
-    #     return {
-    #         'datacenter': dc_names[id % len(dc_names)].upper(),
-    #         'name': f'vm \'{id}\' name',
-    #         'annotation': f'vm \'{id}\' annotation',
-    #         'state': f'vm \'{id}\' state'
-    #     }
-    # return jsonify([_dummy_vm(x) for x in range(10)])
+    if 'DEBUG_VM_LIST' in current_app.config:
+        filename = current_app.config['DEBUG_VM_LIST']
+        logging.warning(
+            f'using cached vm list from {filename}'
+            ' THIS SHOULD ONLY BE DONE WHEN DEBUGGING!')
+        with open(filename) as f:
+            vm_list = json.loads(f.read())
+    else:
+        vm_list = vcenter.get_vms(current_app.config['VCENTER_PARAMS'])
 
-    vms = vcenter.get_vms(current_app.config['VCENTER_PARAMS'])
-    return jsonify(list(vms))
+    return jsonify(list(vm_list))
