@@ -16,7 +16,7 @@ VERSION_RESPONSE_SCHEMA = {
     'type': 'object',
     'properties': {
         'api': {'type': 'string'},
-        'module': {'type': ['string','null']}
+        'module': {'type': 'string'}
     },
     'required': ['api', 'module'],
     'additionalProperties': False
