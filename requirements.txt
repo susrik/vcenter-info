@@ -2,3 +2,5 @@ pyvmomi
 jinja2
 jsonschema
 flask
+pytest
+mock

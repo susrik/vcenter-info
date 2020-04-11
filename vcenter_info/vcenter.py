@@ -27,7 +27,7 @@ def vm_to_dict(vm):
         info['ip'] = summary.guest.ipAddress
     if summary.runtime.question is not None:
         info['question'] = summary.runtime.question.text
-    m = re.match('^.*\[([^]]+)\].*', info['path'])
+    m = re.match(r'^.*\[([^]]+)\].*', info['path'])
     if m:
         info['san'] = m.group(1)
     return info
@@ -52,7 +52,6 @@ def vms_from_list(vmList, depth=0):
 
 
 def load_vms_from_datacenters(auth_config):
-
 
     for dc in auth_config:
 
@@ -101,7 +100,9 @@ if __name__ == "__main__":
     # import jsonschema
     import os
 
-    TEMPLATE_FILENAME = os.path.join(os.path.dirname(__file__), 'report.html.tpl')
+    TEMPLATE_FILENAME = os.path.join(
+        os.path.dirname(__file__),
+        'report.html.tpl')
     CONFIG_FILENAME = 'config.json'
 
     with open(CONFIG_FILENAME) as f:

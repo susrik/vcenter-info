@@ -4,7 +4,7 @@ import logging
 import pkg_resources
 
 from flask import Blueprint, jsonify, request, \
-    Response, render_template, current_app
+    Response, current_app
 
 from vcenter_info import vcenter
 
