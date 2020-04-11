@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "webpack --mode production"
   },
-  "author": "merikreid@gmail.com",
+  "author": "Erik Reid <nobody@nowhere.com>",
   "license": "ISC",
   "devDependencies": {
     "@babel/core": "^7.7.4",

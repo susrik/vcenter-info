@@ -1,0 +1,2 @@
+recursive-include vcenter_info/static/js *.js
+recursive-include vcenter_info/templates *.html
