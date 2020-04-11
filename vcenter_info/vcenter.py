@@ -100,7 +100,9 @@ if __name__ == "__main__":
     # import jsonschema
     import os
 
-    TEMPLATE_FILENAME = os.path.join(os.path.dirname(__file__), 'report.html.tpl')
+    TEMPLATE_FILENAME = os.path.join(
+        os.path.dirname(__file__),
+        'report.html.tpl')
     CONFIG_FILENAME = 'config.json'
 
     with open(CONFIG_FILENAME) as f:
