@@ -8,7 +8,21 @@ class VM extends React.Component {
         super(props);
     }
 
+    renderTableHeader() {
+        return (
+            <tr>
+              <th scope="col">datacenter</th>
+              <th scope="col">name</th>
+              <th scope="col">state</th>
+              <th scope="col">annotation</th>
+            </tr>
+        );
+    }
     render() {
+        if (this.props.info == null) {
+            return this.renderTableHeader()
+        }
+
         return (
             <tr>
               <td>{this.props.info.datacenter}</td>

@@ -21,9 +21,7 @@ class VMQueryResults extends React.Component {
       const rsp_json = await response.json();
       this.setState({
           vms: rsp_json.map(vm => (
-              <table>
                   <VM info={vm}/>
-              </table>
           ))
       });
 
@@ -31,8 +29,11 @@ class VMQueryResults extends React.Component {
 
     render() {
         return (
-            <div>
-                {this.state.vms}
+            <div className="table-responsive">
+                <table class="table table-striped">
+                    <thead class="thead-dark"><VM/></thead>
+                    <tbody>{this.state.vms}</tbody>
+                </table>
             </div>
         );
     }
