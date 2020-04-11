@@ -1,13 +1,30 @@
 import React from 'react';
-import 'bootstrap'
-import VM from './VM';
+import Paper from '@material-ui/core/Paper';
+import {
+  FilteringState,
+  IntegratedFiltering,
+} from '@devexpress/dx-react-grid';
+import {
+  Grid,
+  Table,
+  TableHeaderRow,
+  TableFilterRow,
+} from '@devexpress/dx-react-grid-material-ui';
 import './VMQueryResults.scss';
 
 class VMQueryResults extends React.Component {
 
     constructor() {
         super();
-        this.state = {vms: []};
+        this.state = {
+            columns: [
+                { name: 'datacenter', title: 'Data Center' },
+                { name: 'name', title: 'Name' },
+                { name: 'state', title: 'State' },
+                { name: 'annotation', title: 'Annotation' }
+                ],
+            rows: []
+        };
         this.loadVMs();
     }
 
@@ -20,21 +37,24 @@ class VMQueryResults extends React.Component {
 
       const rsp_json = await response.json();
       this.setState({
-          vms: rsp_json.map(vm => (
-                  <VM info={vm}/>
-          ))
+          rows: rsp_json
       });
-
     }
 
     render() {
         return (
-            <div className="table-responsive">
-                <table class="table table-striped">
-                    <thead class="thead-dark"><VM/></thead>
-                    <tbody>{this.state.vms}</tbody>
-                </table>
-            </div>
+            <Paper>
+              <Grid
+                rows={this.state.rows}
+                columns={this.state.columns}
+              >
+                <FilteringState defaultFilters={[]} />
+                <IntegratedFiltering />
+                <Table />
+                <TableHeaderRow />
+                <TableFilterRow />
+              </Grid>
+            </Paper>
         );
     }
 }
