@@ -1,6 +1,7 @@
 import functools
 import json
 import logging
+import pkg_resources
 
 from flask import Blueprint, jsonify, request, \
     Response, render_template, current_app
@@ -38,8 +39,7 @@ def require_accepts_json(f):
 def version():
     version_params = {
         'api': API_VERSION,
-        'module': None
-        # 'module': pkg_resources.get_distribution('vcenter_info').version
+        'module': pkg_resources.get_distribution('vcenter_info').version
     }
     return jsonify(version_params)
 
