@@ -3,6 +3,8 @@ import Paper from '@material-ui/core/Paper';
 import {
   FilteringState,
   IntegratedFiltering,
+  SortingState,
+  IntegratedSorting
 } from '@devexpress/dx-react-grid';
 import {
   Grid,
@@ -50,8 +52,10 @@ class VMQueryResults extends React.Component {
               >
                 <FilteringState defaultFilters={[]} />
                 <IntegratedFiltering />
+                <SortingState defaultSorting={[]} />
+                <IntegratedSorting />
                 <Table />
-                <TableHeaderRow />
+                <TableHeaderRow showSortingControls />
                 <TableFilterRow />
               </Grid>
             </Paper>
