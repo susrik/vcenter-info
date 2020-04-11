@@ -4,6 +4,8 @@ import logging
 from flask import Blueprint, jsonify, request, \
     Response, render_template, current_app
 
+from vcenter_info import vcenter
+
 blueprint = Blueprint("vcenter-info-api-routes", __name__)
 
 API_VERSION = '0.1'
@@ -47,12 +49,15 @@ def vms():
     logger.debug('getting vms')
     config = current_app.config['VCENTER_PARAMS']
 
-    dc_names = [dc['hostname'] for dc in config]
-    def _dummy_vm(id):
-        return {
-            'datacenter': dc_names[id % len(dc_names)].upper(),
-            'name': f'vm \'{id}\' name',
-            'annotation': f'vm \'{id}\' annotation',
-            'state': f'vm \'{id}\' state'
-        }
-    return jsonify([_dummy_vm(x) for x in range(10)])
+    # dc_names = [dc['hostname'] for dc in config]
+    # def _dummy_vm(id):
+    #     return {
+    #         'datacenter': dc_names[id % len(dc_names)].upper(),
+    #         'name': f'vm \'{id}\' name',
+    #         'annotation': f'vm \'{id}\' annotation',
+    #         'state': f'vm \'{id}\' state'
+    #     }
+    # return jsonify([_dummy_vm(x) for x in range(10)])
+
+    vms = vcenter.get_vms(current_app.config['VCENTER_PARAMS'])
+    return jsonify(list(vms))
