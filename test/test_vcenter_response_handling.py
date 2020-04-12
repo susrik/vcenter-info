@@ -4,7 +4,7 @@ import os
 import random
 import string
 import tempfile
-import  time
+import time
 from pyVmomi import vim
 from unittest.mock import patch
 from unittest.mock import MagicMock
@@ -79,6 +79,7 @@ def client():
         with vcenter_info.create_app().test_client() as c:
             yield c
 
+
 @pytest.fixture
 def dummy_json_file():
     with tempfile.NamedTemporaryFile() as f:
@@ -106,6 +107,7 @@ def _random_vm_spec():
         'question': _random_string(40),
         'state': _random_string(10)
     }
+
 
 def mocked_vm(spec=None):
     """
@@ -147,6 +149,7 @@ AUTH_CONFIG = [
   }
 ]
 
+
 def mocked_SmartConnect(*args, **kwargs):
 
     mocked_content = Object()
@@ -160,7 +163,7 @@ def mocked_SmartConnect(*args, **kwargs):
         dc.name = _random_string(20)
 
     si = Object()
-    si.RetrieveContent = lambda : mocked_content
+    si.RetrieveContent = lambda: mocked_content
     return si
 
 
