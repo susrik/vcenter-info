@@ -73,10 +73,12 @@ def _parse_config_and_add_defaults(s):
         # verify cache file is writeable & is parseable if exists
         already_exists = os.path.exists(config['cache']['filename'])
         with open(config['cache']['filename'], 'a') as f:
-            if already_exists:
-                json.loads(f.read().decode('utf-8'))
+            pass
         if not already_exists:
             os.unlink(config['cache']['filename'])
+        else:
+            with open(config['cache']['filename'], 'r') as f:
+                json.loads(f.read())
 
     return config
 
