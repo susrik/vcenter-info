@@ -63,10 +63,13 @@ def load_cached_vms(params):
 @require_accepts_json
 def vms():
 
+    refresh = request.args.get('refresh', default=False, type=bool)
+
     logger.debug('getting vms')
+
     config = current_app.config['CONFIG_PARAMS']
 
-    vm_list = load_cached_vms(config['cache'])
+    vm_list = None if refresh else load_cached_vms(config['cache'])
     if not vm_list:
         vm_list = list(vcenter.get_vms(config['auth']))
         with open(config['cache']['filename'], 'w') as f:
