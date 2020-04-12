@@ -64,15 +64,18 @@ def client():
         }
 
     config_params = {
+        "cache": {"filename": None},
         "auth": [_dc() for _ in range(10)]
     }
 
-    with tempfile.NamedTemporaryFile() as f:
-        f.write(json.dumps(config_params).encode('utf-8'))
-        f.flush()
-        os.environ['CONFIG_FILENAME'] = f.name
-        with vcenter_info.create_app().test_client() as c:
-            yield c
+    with tempfile.NamedTemporaryFile() as cache_file:
+        config_params['cache']['filename'] = cache_file.name
+        with tempfile.NamedTemporaryFile() as config_file:
+            config_file.write(json.dumps(config_params).encode('utf-8'))
+            config_file.flush()
+            os.environ['CONFIG_FILENAME'] = config_file.name
+            with vcenter_info.create_app().test_client() as c:
+                yield c
 
 @pytest.fixture
 def dummy_json_file():
@@ -209,3 +212,14 @@ def test_cache_no_file():
         'expiration_seconds': 100
     })
     assert vm_list is None
+
+
+def test_cache_bad_json():
+    with tempfile.NamedTemporaryFile() as f:
+        f.write('not json'.encode('utf-8'))
+        f.flush
+        vm_list = api.load_cached_vms({
+            'filename': f.name,
+            'expiration_seconds': 100
+        })
+        assert vm_list is None
