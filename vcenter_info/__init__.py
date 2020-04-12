@@ -61,7 +61,6 @@ CONFIG_SCHEMA = {
 
 
 def _parse_config_and_add_defaults(s):
-    # TODO: best is to test file writeablity here
     config = json.loads(s)
     jsonschema.validate(config, CONFIG_SCHEMA)
     for dc in config['auth']:
@@ -69,6 +68,16 @@ def _parse_config_and_add_defaults(s):
     input_cache = config.get('cache', {})
     config['cache'] = copy.copy(CONFIG_DEFAULT_CACHE_PARAMS)
     config['cache'].update(input_cache)
+
+    if config['cache']['expiration_seconds'] > 0:
+        # verify cache file is writeable & is parseable if exists
+        already_exists = os.path.exists(config['cache']['filename'])
+        with open(config['cache']['filename'], 'a') as f:
+            if already_exists:
+                json.loads(f.read().decode('utf-8'))
+        if not already_exists:
+            os.unlink(config['cache']['filename'])
+
     return config
 
 

@@ -70,12 +70,14 @@ def client():
 
     with tempfile.NamedTemporaryFile() as cache_file:
         config_params['cache']['filename'] = cache_file.name
-        with tempfile.NamedTemporaryFile() as config_file:
-            config_file.write(json.dumps(config_params).encode('utf-8'))
-            config_file.flush()
-            os.environ['CONFIG_FILENAME'] = config_file.name
-            with vcenter_info.create_app().test_client() as c:
-                yield c
+        # the file won't exist when used ...
+
+    with tempfile.NamedTemporaryFile() as config_file:
+        config_file.write(json.dumps(config_params).encode('utf-8'))
+        config_file.flush()
+        os.environ['CONFIG_FILENAME'] = config_file.name
+        with vcenter_info.create_app().test_client() as c:
+            yield c
 
 @pytest.fixture
 def dummy_json_file():
