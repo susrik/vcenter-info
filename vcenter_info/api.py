@@ -51,7 +51,11 @@ def load_cached_vms(params):
         stat = os.stat(params['filename'])
         if time.time() - stat.st_mtime < params['expiration_seconds']:
             with open(params['filename']) as f:
-                return json.loads(f.read())
+                try:
+                    return json.loads(f.read())
+                except json.JSONDecodeError:
+                    logger.exception(f'error parsing {params["filename"]}')
+
     return None
 
 
@@ -64,6 +68,8 @@ def vms():
 
     vm_list = load_cached_vms(config['cache'])
     if not vm_list:
-        vm_list = vcenter.get_vms(config['auth'])
+        vm_list = list(vcenter.get_vms(config['auth']))
+        with open(config['cache']['filename'], 'w') as f:
+            f.write(json.dumps(vm_list))
 
-    return jsonify(list(vm_list))
+    return jsonify(vm_list)
