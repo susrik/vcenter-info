@@ -57,6 +57,6 @@ def vms():
         with open(filename) as f:
             vm_list = json.loads(f.read())
     else:
-        vm_list = vcenter.get_vms(current_app.config['VCENTER_PARAMS'])
+        vm_list = vcenter.get_vms(current_app.config['CONFIG_PARAMS']['auth'])
 
     return jsonify(list(vm_list))

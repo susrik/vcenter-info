@@ -1,12 +1,19 @@
-[
-  {
-    "hostname": "vcenter.domain",
-    "username": "username",
-    "password": "XXXXXXXXXXXXX"
+{
+  "cache": {
+    "filename": "/tmp/cached-vms.json",
+    "expiration_seconds": 86400
   },
-  {
-    "hostname": "another-vcenter.domain",
-    "username": "another-username",
-    "password": "XXXXXXXXXXXX"
-  }
-]
+  "auth": [
+    {
+      "hostname": "vcenter.domain",
+      "username": "username",
+      "password": "XXXXXXXXXXXXX"
+    },
+    {
+      "hostname": "another-vcenter.domain",
+      "port": 443,
+      "username": "another-username",
+      "password": "XXXXXXXXXXXX"
+    }
+  ]
+}

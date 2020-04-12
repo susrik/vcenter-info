@@ -1,6 +1,7 @@
 """
 automatically invoked app factory
 """
+import copy
 import json
 import logging
 import os
@@ -10,12 +11,28 @@ import jsonschema
 
 logger = logging.getLogger(__name__)
 CONFIG_ENV_VAR_NAME = 'CONFIG_FILENAME'
-DEBUG_ENV_VM_LIST_FILENAME = 'DEBUG_VM_LIST'
+
+CONFIG_DEFAULT_PORT = 443
+CONFIG_DEFAULT_CACHE_PARAMS = {
+    'filename': '/tmp/cached-vms.json',
+    'expiration_seconds': 86400
+}
 
 CONFIG_SCHEMA = {
     "$schema": "http://json-schema.org/draft-07/schema#",
 
     "definitions": {
+        "cache": {
+            "type": "object",
+            "properties": {
+                "filename": {"type": "string"},
+                "expiration_seconds": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+            },
+            "additionalProperties": False
+        },
         "datacenter": {
             "type": "object",
             "properties": {
@@ -29,9 +46,29 @@ CONFIG_SCHEMA = {
         }
     },
 
-    "type": "array",
-    "items": {"$ref": "#/definitions/datacenter"}
+    "type": "object",
+    "properties": {
+        "cache": {"$ref": "#/definitions/cache"},
+        "auth": {
+            "type": "array",
+            "minItems": 1,
+            "items": {"$ref": "#/definitions/datacenter"}
+        }
+    },
+    "required": ["auth"],
+    "additionalProperties": False
 }
+
+
+def _parse_config_and_add_defaults(s):
+    config = json.loads(s)
+    jsonschema.validate(config, CONFIG_SCHEMA)
+    for dc in config['auth']:
+        dc.setdefault('port', CONFIG_DEFAULT_PORT)
+    input_cache = config.get('cache', {})
+    config['cache'] = copy.copy(CONFIG_DEFAULT_CACHE_PARAMS)
+    config['cache'].update(input_cache)
+    return config
 
 
 def create_app():
@@ -47,15 +84,11 @@ def create_app():
         'config file {} not found'.format(config_filename)
 
     with open(config_filename) as f:
-        config = json.loads(f.read())
-        jsonschema.validate(config, CONFIG_SCHEMA)
+        config = _parse_config_and_add_defaults(f.read())
 
     app = Flask(__name__)
     app.secret_key = 'super secret session key'
-    app.config['VCENTER_PARAMS'] = config
-
-    if DEBUG_ENV_VM_LIST_FILENAME in os.environ:
-        app.config['DEBUG_VM_LIST'] = os.environ[DEBUG_ENV_VM_LIST_FILENAME]
+    app.config['CONFIG_PARAMS'] = config
 
     from vcenter_info import api
     app.register_blueprint(api.blueprint, url_prefix='/api')

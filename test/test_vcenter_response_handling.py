@@ -61,7 +61,9 @@ def client():
             'password': _random_string(20)
         }
 
-    config_params = [_dc() for _ in range(10)]
+    config_params = {
+        "auth": [_dc() for _ in range(10)]
+    }
 
     with tempfile.NamedTemporaryFile() as f:
         f.write(json.dumps(config_params).encode('utf-8'))
