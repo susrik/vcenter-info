@@ -4,12 +4,14 @@ import os
 import random
 import string
 import tempfile
+import time
 from pyVmomi import vim
 from unittest.mock import patch
 from unittest.mock import MagicMock
 import pytest
 import vcenter_info
 from vcenter_info import vcenter
+from vcenter_info import api
 
 VERSION_RESPONSE_SCHEMA = {
     '$schema': 'http://json-schema.org/draft-07/schema#',
@@ -61,14 +63,30 @@ def client():
             'password': _random_string(20)
         }
 
-    config_params = [_dc() for _ in range(10)]
+    config_params = {
+        "cache": {"filename": None},
+        "auth": [_dc() for _ in range(10)]
+    }
 
-    with tempfile.NamedTemporaryFile() as f:
-        f.write(json.dumps(config_params).encode('utf-8'))
-        f.flush()
-        os.environ['CONFIG_FILENAME'] = f.name
+    with tempfile.NamedTemporaryFile() as cache_file:
+        config_params['cache']['filename'] = cache_file.name
+        # the file won't exist when used ...
+
+    with tempfile.NamedTemporaryFile() as config_file:
+        config_file.write(json.dumps(config_params).encode('utf-8'))
+        config_file.flush()
+        os.environ['CONFIG_FILENAME'] = config_file.name
         with vcenter_info.create_app().test_client() as c:
             yield c
+
+
+@pytest.fixture
+def dummy_json_file():
+    with tempfile.NamedTemporaryFile() as f:
+        f.write(json.dumps({'a': 1}).encode('utf-8'))
+        f.flush()
+        yield f.name
+
 
 class Object(object):
     pass
@@ -89,6 +107,7 @@ def _random_vm_spec():
         'question': _random_string(40),
         'state': _random_string(10)
     }
+
 
 def mocked_vm(spec=None):
     """
@@ -130,6 +149,7 @@ AUTH_CONFIG = [
   }
 ]
 
+
 def mocked_SmartConnect(*args, **kwargs):
 
     mocked_content = Object()
@@ -143,7 +163,7 @@ def mocked_SmartConnect(*args, **kwargs):
         dc.name = _random_string(20)
 
     si = Object()
-    si.RetrieveContent = lambda : mocked_content
+    si.RetrieveContent = lambda: mocked_content
     return si
 
 
@@ -170,3 +190,41 @@ def test_vmlist_api_response(client):
     assert rv.is_json
     response_data = json.loads(rv.data.decode('utf-8'))
     jsonschema.validate(response_data, VMLIST_SCHEMA)
+
+
+def test_cache_loading(dummy_json_file):
+    vm_list = api.load_cached_vms({
+        'filename': dummy_json_file,
+        'expiration_seconds': 100
+    })
+    assert vm_list
+
+
+def test_cache_expired(dummy_json_file):
+    time.sleep(0.5)
+    vm_list = api.load_cached_vms({
+        'filename': dummy_json_file,
+        'expiration_seconds': .001
+    })
+    assert vm_list is None
+
+
+def test_cache_no_file():
+    with tempfile.NamedTemporaryFile() as f:
+        non_existent_filename = f.name
+    vm_list = api.load_cached_vms({
+        'filename': non_existent_filename,
+        'expiration_seconds': 100
+    })
+    assert vm_list is None
+
+
+def test_cache_bad_json():
+    with tempfile.NamedTemporaryFile() as f:
+        f.write('not json'.encode('utf-8'))
+        f.flush
+        vm_list = api.load_cached_vms({
+            'filename': f.name,
+            'expiration_seconds': 100
+        })
+        assert vm_list is None

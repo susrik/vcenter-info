@@ -1,10 +1,11 @@
 import functools
 import json
 import logging
+import os
 import pkg_resources
+import time
 
-from flask import Blueprint, jsonify, request, \
-    Response, current_app
+from flask import Blueprint, jsonify, request, Response, current_app
 
 from vcenter_info import vcenter
 
@@ -44,19 +45,34 @@ def version():
     return jsonify(version_params)
 
 
+def load_cached_vms(params):
+    if params['expiration_seconds'] > 0 \
+            and os.path.isfile(params['filename']):
+        stat = os.stat(params['filename'])
+        if time.time() - stat.st_mtime < params['expiration_seconds']:
+            with open(params['filename']) as f:
+                try:
+                    return json.loads(f.read())
+                except json.JSONDecodeError:
+                    logger.exception(f'error parsing {params["filename"]}')
+
+    return None
+
+
 @blueprint.route("/vms", methods=['GET', 'POST'])
 @require_accepts_json
 def vms():
+
+    refresh = request.args.get('refresh', default=False, type=bool)
+
     logger.debug('getting vms')
 
-    if 'DEBUG_VM_LIST' in current_app.config:
-        filename = current_app.config['DEBUG_VM_LIST']
-        logging.warning(
-            f'using cached vm list from {filename}'
-            ' THIS SHOULD ONLY BE DONE WHEN DEBUGGING!')
-        with open(filename) as f:
-            vm_list = json.loads(f.read())
-    else:
-        vm_list = vcenter.get_vms(current_app.config['VCENTER_PARAMS'])
+    config = current_app.config['CONFIG_PARAMS']
 
-    return jsonify(list(vm_list))
+    vm_list = None if refresh else load_cached_vms(config['cache'])
+    if not vm_list:
+        vm_list = list(vcenter.get_vms(config['auth']))
+        with open(config['cache']['filename'], 'w') as f:
+            f.write(json.dumps(vm_list))
+
+    return jsonify(vm_list)
