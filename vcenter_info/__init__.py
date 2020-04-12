@@ -27,7 +27,7 @@ CONFIG_SCHEMA = {
             "properties": {
                 "filename": {"type": "string"},
                 "expiration_seconds": {
-                    "type": "integer",
+                    "type": "number",
                     "minimum": 0
                 },
             },
@@ -61,6 +61,7 @@ CONFIG_SCHEMA = {
 
 
 def _parse_config_and_add_defaults(s):
+    # TODO: best is to test file writeablity here
     config = json.loads(s)
     jsonschema.validate(config, CONFIG_SCHEMA)
     for dc in config['auth']:
