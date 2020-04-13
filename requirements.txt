@@ -2,5 +2,6 @@ pyvmomi
 jinja2
 jsonschema
 flask
+click
 pytest
 mock

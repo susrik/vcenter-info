@@ -22,7 +22,10 @@ class VMQueryResults extends React.Component {
             columns: [
                 { name: 'datacenter', title: 'Data Center' },
                 { name: 'name', title: 'Name' },
-                { name: 'state', title: 'State' },
+                { name: 'overallStatus', title: 'Status'},
+                { name: 'state', title: 'Power' },
+                { name: 'boot', title: 'Boot Time'},
+                { name: 'uptime', title: 'Uptime (s)'},
                 { name: 'annotation', title: 'Annotation' }
                 ],
             rows: []
@@ -39,7 +42,15 @@ class VMQueryResults extends React.Component {
 
       const rsp_json = await response.json();
       this.setState({
-          rows: rsp_json
+          rows: rsp_json.map(vm => ({
+              name: vm.name,
+              datacenter: vm.datacenter,
+              overallStatus: vm.overallStatus,
+              state: vm.state,
+              boot: vm.boot,
+              uptime: vm.stats.uptimeSeconds,
+              annotation: vm.annotation
+          }))
       });
     }
 
