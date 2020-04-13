@@ -7,6 +7,7 @@
 * [Running](#running)
   * [Configuration](#configuration)
   * [Starting the Server](#starting-the-server)
+  * [Running the Console Check](#running-the-console-check)
 * [Development Environment](#development-environment)
   * [Setup](#setup)
   * [Generate Javascript Bundle](#generate-javascript-bundle)
@@ -15,9 +16,10 @@
 
 This project is used for making some simple
 queries to one or more vCenter host and rendering
-the results in a simple way.  It's also a
-sample project for serving a npm-managed React
+the results in a simple way, as a npm-managed React
 app with Flask.
+There's also a console script that outputs vm
+statistics in influx line protocol format.
  
 ## Package-based installation
 
@@ -68,6 +70,17 @@ or:
 
 ```bash
 CONFIG_FILENAME=config.json python -m vcenter_info.app
+```
+
+## Running the Console Check
+
+```bash
+Usage: check-vcenter-vms [OPTIONS]
+
+Options:
+  --measurement TEXT  influx measurement name  [required]
+  --config FILENAME   config filename  [required]
+  --help              Show this message and exit.
 ```
 
 
