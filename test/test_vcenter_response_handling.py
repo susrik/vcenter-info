@@ -1,3 +1,4 @@
+import datetime
 import json
 import jsonschema
 import os
@@ -28,10 +29,60 @@ VMLIST_SCHEMA = {
     '$schema': 'http://json-schema.org/draft-07/schema#',
 
     'definitions': {
+        'stats': {
+            'type': 'object',
+            'properties': {
+                'balloonedMemory': {'type': 'integer', 'minimum': -1},
+                'compressedMemory': {'type': 'integer', 'minimum': -1},
+                'consumedOverheadMemory': {'type': 'integer', 'minimum': -1},
+                'distributedCpuEntitlement': {'type': 'integer', 'minimum': -1},
+                'distributedMemoryEntitlement': {
+                    'type': 'integer', 'minimum': -1},
+                'ftLatencyStatus': {'type': 'string'},
+                'ftLogBandwidth': {'type': 'integer', 'minimum': -1},
+                'ftSecondaryLatency': {'type': 'integer', 'minimum': -1},
+                'guestHeartbeatStatus': {'type': 'string'},
+                'guestMemoryUsage': {'type': 'integer', 'minimum': -1},
+                'hostMemoryUsage': {'type': 'integer', 'minimum': -1},
+                'overallCpuDemand': {'type': 'integer', 'minimum': -1},
+                'overallCpuUsage': {'type': 'integer', 'minimum': -1},
+                'privateMemory': {'type': 'integer', 'minimum': -1},
+                'sharedMemory': {'type': 'integer', 'minimum': -1},
+                'ssdSwappedMemory': {'type': 'integer', 'minimum': -1},
+                'staticCpuEntitlement': {'type': 'integer', 'minimum': -1},
+                'staticMemoryEntitlement': {'type': 'integer', 'minimum': -1},
+                'swappedMemory': {'type': 'integer', 'minimum': -1},
+                'uptimeSeconds': {'type': 'integer', 'minimum': -1}
+            },
+            'required': [
+                'balloonedMemory',
+                'compressedMemory',
+                'consumedOverheadMemory',
+                'distributedCpuEntitlement',
+                'distributedMemoryEntitlement',
+                'ftLatencyStatus',
+                'ftLogBandwidth',
+                'ftSecondaryLatency',
+                'guestHeartbeatStatus',
+                'guestMemoryUsage',
+                'hostMemoryUsage',
+                'overallCpuDemand',
+                'overallCpuUsage',
+                'privateMemory',
+                'sharedMemory',
+                'ssdSwappedMemory',
+                'staticCpuEntitlement',
+                'staticMemoryEntitlement',
+                'swappedMemory',
+                'uptimeSeconds'
+            ],
+            'additionalProperties': False
+        },
         'vm': {
             'type': 'object',
             'properties': {
                 'annotation': {'type': 'string'},
+                'boot': {'type': ['string', 'null']},
                 'datacenter': {'type': 'string'},
                 'guest': {'type': 'string'},
                 'ip': {'type': ['string', 'null']},
@@ -40,10 +91,12 @@ VMLIST_SCHEMA = {
                 'question': {'type': ['string', 'null']},
                 'san': {'type': ['string', 'null']},
                 'state': {'type': 'string'},
+                'stats': {'$ref': '#/definitions/stats'}
             },
             'required': [
                 'annotation', 'datacenter', 'guest',
-                'ip', 'name', 'path', 'question', 'san', 'state'],
+                'ip', 'name', 'path', 'question',
+                'san', 'state', 'stats'],
             'additionalProperties': False
         }
     },
@@ -126,12 +179,35 @@ def mocked_vm(spec=None):
     v.summary.config.annotation = spec['annotation']
 
     v.summary.runtime = Object()
+    v.summary.runtime.bootTime = datetime.datetime.now()
     v.summary.runtime.powerState = spec['state']
     v.summary.runtime.question = Object()
     v.summary.runtime.question.text = spec['question']
 
     v.summary.guest = Object()
     v.summary.guest.ipAddress = spec['ip']
+
+    v.summary.quickStats = Object()
+    v.summary.quickStats.balloonedMemory = -1
+    v.summary.quickStats.compressedMemory = -1
+    v.summary.quickStats.consumedOverheadMemory = -1
+    v.summary.quickStats.distributedCpuEntitlement = -1
+    v.summary.quickStats.distributedMemoryEntitlement = -1
+    v.summary.quickStats.ftLatencyStatus = Object()
+    v.summary.quickStats.ftLogBandwidth = -1
+    v.summary.quickStats.ftSecondaryLatency = -1
+    v.summary.quickStats.guestHeartbeatStatus = Object()
+    v.summary.quickStats.guestMemoryUsage = -1
+    v.summary.quickStats.hostMemoryUsage = -1
+    v.summary.quickStats.overallCpuDemand = -1
+    v.summary.quickStats.overallCpuUsage = -1
+    v.summary.quickStats.privateMemory = -1
+    v.summary.quickStats.sharedMemory = -1
+    v.summary.quickStats.ssdSwappedMemory = -1
+    v.summary.quickStats.staticCpuEntitlement = -1
+    v.summary.quickStats.staticMemoryEntitlement = -1
+    v.summary.quickStats.swappedMemory = -1
+    v.summary.quickStats.uptimeSeconds = -1
 
     return v
 
