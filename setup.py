@@ -17,7 +17,8 @@ setup(
         'pyvmomi',
         'jinja2',
         'jsonschema',
-        'flask'
+        'flask',
+        'click'
     ],
     include_package_data=True,
     classifiers=[
