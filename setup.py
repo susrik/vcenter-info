@@ -35,6 +35,6 @@ setup(
         'Operating System :: OS Independent',
         'Development Status :: 4 - Beta'
     ],
-    python_requires='>=3.5'
+    python_requires='>=3.6'
 )
 
