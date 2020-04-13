@@ -54,6 +54,15 @@ class VMQueryResults extends React.Component {
       });
     }
 
+    TableRow = ({ row, ...restProps }) => (
+      <Table.Row
+        {...restProps}
+        className={"state-" + row.overallStatus}
+        // style={row.overallStatus}
+        // style={{ backgroundColor: row.overallStatus }}
+      />
+    );
+
     render() {
         return (
             <Paper>
@@ -65,7 +74,7 @@ class VMQueryResults extends React.Component {
                 <IntegratedFiltering />
                 <SortingState defaultSorting={[{ columnName: 'name', direction: 'asc' }]} />
                 <IntegratedSorting />
-                <Table />
+                <Table rowComponent={this.TableRow}/>
                 <TableHeaderRow showSortingControls />
                 <TableFilterRow />
               </Grid>
