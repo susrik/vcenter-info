@@ -21,6 +21,11 @@ setup(
         'click'
     ],
     include_package_data=True,
+    entry_points={
+        'console_scripts': [
+            'check-vcenter-vms=vcenter_info.cli:cli'
+        ]
+    },
     classifiers=[
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.6',
