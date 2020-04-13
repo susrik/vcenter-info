@@ -4,6 +4,7 @@ import re
 import ssl
 from pyVim.connect import SmartConnect, Disconnect
 from pyVmomi import vim
+import datetime
 
 
 logger = logging.getLogger(__name__)
@@ -19,9 +20,34 @@ def vm_to_dict(vm):
         'guest': config.guestFullName,
         'annotation': config.annotation,
         'state': summary.runtime.powerState,
+        'overallStatus': str(summary.overallStatus),
         'ip': None,
         'question': None,
-        'san': None
+        'san': None,
+        'boot': None,
+        'stats': {
+            # cf. https://vdc-download.vmware.com/vmwb-repository/dcr-public/da47f910-60ac-438b-8b9b-6122f4d14524/16b7274a-bf8b-4b4c-a05e-746f2aa93c8c/doc/vim.vm.Summary.QuickStats.html  # noqa
+            'balloonedMemory': -1,
+            'compressedMemory': -1,
+            'consumedOverheadMemory': -1,
+            'distributedCpuEntitlement': -1,
+            'distributedMemoryEntitlement': -1,
+            'ftLatencyStatus': None,
+            'ftLogBandwidth': -1,
+            'ftSecondaryLatency': -1,
+            'guestHeartbeatStatus': None,
+            'guestMemoryUsage': -1,
+            'hostMemoryUsage': -1,
+            'overallCpuDemand': -1,
+            'overallCpuUsage': -1,
+            'privateMemory': -1,
+            'sharedMemory': -1,
+            'ssdSwappedMemory': -1,
+            'staticCpuEntitlement': -1,
+            'staticMemoryEntitlement': -1,
+            'swappedMemory': -1,
+            'uptimeSeconds': -1
+        }
     }
     if summary.guest is not None:
         info['ip'] = summary.guest.ipAddress
@@ -30,6 +56,14 @@ def vm_to_dict(vm):
     m = re.match(r'^.*\[([^]]+)\].*', info['path'])
     if m:
         info['san'] = m.group(1)
+
+    if isinstance(summary.runtime.bootTime, datetime.datetime):
+        info['boot'] = summary.runtime.bootTime.isoformat()
+
+    for name in info['stats']:
+        value = getattr(summary.quickStats, name, None)
+        info['stats'][name] = value if isinstance(value, int) else str(value)
+
     return info
 
 

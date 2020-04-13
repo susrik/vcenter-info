@@ -5,7 +5,7 @@ with open("README.md") as f:
 
 setup(
     name='vcenter-info',
-    version="0.0.1",
+    version="0.0.2",
     author='Erik Reid',
     author_email='nobody@nowhere.org',
     description='Simple view of vCenter data',
@@ -17,9 +17,15 @@ setup(
         'pyvmomi',
         'jinja2',
         'jsonschema',
-        'flask'
+        'flask',
+        'click'
     ],
     include_package_data=True,
+    entry_points={
+        'console_scripts': [
+            'check-vcenter-vms=vcenter_info.cli:cli'
+        ]
+    },
     classifiers=[
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.6',
