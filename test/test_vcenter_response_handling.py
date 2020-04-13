@@ -172,7 +172,7 @@ def test_cache_no_file():
 def test_cache_bad_json():
     with tempfile.NamedTemporaryFile() as f:
         f.write('not json'.encode('utf-8'))
-        f.flush
+        f.flush()
         vm_list = api.load_cached_vms({
             'filename': f.name,
             'expiration_seconds': 100
