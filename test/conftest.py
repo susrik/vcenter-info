@@ -13,7 +13,7 @@ class Object(object):
     pass
 
 
-def random_string(num, letters=string.printable):
+def random_string(num, letters=string.ascii_letters + string.digits):
     return ''.join(random.choice(letters) for _ in range(num))
 
 
@@ -28,7 +28,7 @@ def _random_vm_spec():
         'overallStatus': random_string(10),
         'path': '[' + random_string(10) + '] ' + random_string(40),
         'question': random_string(40),
-        'state': random_string(10),
+        'state': random.choice(['poweredOn', 'poweredOff']),
         'stats': {
             'balloonedMemory': random.randint(-1, 1000000),
             'compressedMemory': random.randint(-1, 1000000),

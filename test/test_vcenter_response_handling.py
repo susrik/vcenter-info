@@ -105,7 +105,6 @@ VMLIST_SCHEMA = {
 }
 
 
-
 @pytest.fixture
 def client(config_file):
     os.environ['CONFIG_FILENAME'] = config_file

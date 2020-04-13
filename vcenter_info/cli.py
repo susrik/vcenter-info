@@ -1,9 +1,5 @@
-import json
 import logging
-
 import click
-import jsonschema
-
 from vcenter_info import vcenter, config
 
 logger = logging.getLogger(__name__)
@@ -52,10 +48,14 @@ def cli(measurement, config):
     for vm in vcenter.get_vms(config['auth']):
         if vm['state'] != 'poweredOn':
             continue
-        tags = {'name': vm['name']}
-        fields = dict([(k, v) for k, v in vm['stats'].items() if isinstance(v, int)])
-
-        print(_make_influx_line(measurement=measurement, fields=fields, tags=tags))
+        tags = {'name': vm['name'], 'datacenter': vm['datacenter']}
+        fields = dict([
+            (k, v) for k, v in vm['stats'].items()
+            if isinstance(v, int)])
+        print(_make_influx_line(
+            measurement=measurement,
+            fields=fields,
+            tags=tags))
 
 
 if __name__ == '__main__':
