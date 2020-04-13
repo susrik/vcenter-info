@@ -20,6 +20,7 @@ def vm_to_dict(vm):
         'guest': config.guestFullName,
         'annotation': config.annotation,
         'state': summary.runtime.powerState,
+        'overallStatus': str(summary.overallStatus),
         'ip': None,
         'question': None,
         'san': None,

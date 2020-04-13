@@ -87,6 +87,7 @@ VMLIST_SCHEMA = {
                 'guest': {'type': 'string'},
                 'ip': {'type': ['string', 'null']},
                 'name': {'type': 'string'},
+                'overallStatus': {'type': 'string'},
                 'path': {'type': 'string'},
                 'question': {'type': ['string', 'null']},
                 'san': {'type': ['string', 'null']},
@@ -95,8 +96,8 @@ VMLIST_SCHEMA = {
             },
             'required': [
                 'annotation', 'datacenter', 'guest',
-                'ip', 'name', 'path', 'question',
-                'san', 'state', 'stats'],
+                'ip', 'name', 'overallStatus', 'path',
+                'question', 'san', 'state', 'stats'],
             'additionalProperties': False
         }
     },
@@ -152,13 +153,37 @@ def _random_string(num, letters=string.printable):
 def _random_vm_spec():
     return {
         'annotation': _random_string(100),
+        'boot': datetime.datetime.now().isoformat(),
         'datacenter': _random_string(15),
         'guest': _random_string(15),
         'ip': _random_string(20),
         'name': _random_string(20),
+        'overallStatus': _random_string(10),
         'path': '[' + _random_string(10) + '] ' + _random_string(40),
         'question': _random_string(40),
-        'state': _random_string(10)
+        'state': _random_string(10),
+        'stats': {
+            'balloonedMemory': random.randint(-1, 1000000),
+            'compressedMemory': random.randint(-1,1000000),
+            'consumedOverheadMemory': random.randint(-1,1000000),
+            'distributedCpuEntitlement': random.randint(-1,1000000),
+            'distributedMemoryEntitlement': random.randint(-1,1000000),
+            'ftLatencyStatus': _random_string(10),
+            'ftLogBandwidth': random.randint(-1,1000000),
+            'ftSecondaryLatency': random.randint(-1,1000000),
+            'guestHeartbeatStatus': _random_string(10),
+            'guestMemoryUsage': random.randint(-1,1000000),
+            'hostMemoryUsage': random.randint(-1,1000000),
+            'overallCpuDemand': random.randint(-1,1000000),
+            'overallCpuUsage': random.randint(-1,1000000),
+            'privateMemory': random.randint(-1,1000000),
+            'sharedMemory': random.randint(-1,1000000),
+            'ssdSwappedMemory': random.randint(-1,1000000),
+            'staticCpuEntitlement': random.randint(-1,1000000),
+            'staticMemoryEntitlement': random.randint(-1,1000000),
+            'swappedMemory': random.randint(-1,1000000),
+            'uptimeSeconds': random.randint(-1,1000000)
+        }
     }
 
 
@@ -171,6 +196,7 @@ def mocked_vm(spec=None):
 
     v = MagicMock(spec=vim.VirtualMachine)
     v.summary = Object()
+    v.summary.overallStatus = spec['overallStatus']
 
     v.summary.config = Object()
     v.summary.config.name = spec['name']
@@ -179,7 +205,7 @@ def mocked_vm(spec=None):
     v.summary.config.annotation = spec['annotation']
 
     v.summary.runtime = Object()
-    v.summary.runtime.bootTime = datetime.datetime.now()
+    v.summary.runtime.bootTime = datetime.datetime.fromisoformat(spec['boot'])
     v.summary.runtime.powerState = spec['state']
     v.summary.runtime.question = Object()
     v.summary.runtime.question.text = spec['question']
@@ -188,26 +214,8 @@ def mocked_vm(spec=None):
     v.summary.guest.ipAddress = spec['ip']
 
     v.summary.quickStats = Object()
-    v.summary.quickStats.balloonedMemory = -1
-    v.summary.quickStats.compressedMemory = -1
-    v.summary.quickStats.consumedOverheadMemory = -1
-    v.summary.quickStats.distributedCpuEntitlement = -1
-    v.summary.quickStats.distributedMemoryEntitlement = -1
-    v.summary.quickStats.ftLatencyStatus = Object()
-    v.summary.quickStats.ftLogBandwidth = -1
-    v.summary.quickStats.ftSecondaryLatency = -1
-    v.summary.quickStats.guestHeartbeatStatus = Object()
-    v.summary.quickStats.guestMemoryUsage = -1
-    v.summary.quickStats.hostMemoryUsage = -1
-    v.summary.quickStats.overallCpuDemand = -1
-    v.summary.quickStats.overallCpuUsage = -1
-    v.summary.quickStats.privateMemory = -1
-    v.summary.quickStats.sharedMemory = -1
-    v.summary.quickStats.ssdSwappedMemory = -1
-    v.summary.quickStats.staticCpuEntitlement = -1
-    v.summary.quickStats.staticMemoryEntitlement = -1
-    v.summary.quickStats.swappedMemory = -1
-    v.summary.quickStats.uptimeSeconds = -1
+    for name, value in spec['stats'].items():
+        setattr(v.summary.quickStats, name, value)
 
     return v
 
