@@ -74,7 +74,8 @@ def mocked_vm(spec=None):
     v.summary.runtime = Object()
     # python 3.6 datetime doesn'' have fromisoformat
     v.summary.runtime.bootTime = str(spec['boot'])
-    # v.summary.runtime.bootTime = datetime.datetime.fromisoformat(spec['boot'])
+    # v.summary.runtime.bootTime \
+    #   = datetime.datetime.fromisoformat(spec['boot'])
     v.summary.runtime.powerState = spec['state']
     v.summary.runtime.question = Object()
     v.summary.runtime.question.text = spec['question']
