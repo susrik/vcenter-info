@@ -35,7 +35,8 @@ VMLIST_SCHEMA = {
                 'balloonedMemory': {'type': 'integer', 'minimum': -1},
                 'compressedMemory': {'type': 'integer', 'minimum': -1},
                 'consumedOverheadMemory': {'type': 'integer', 'minimum': -1},
-                'distributedCpuEntitlement': {'type': 'integer', 'minimum': -1},
+                'distributedCpuEntitlement': {
+                    'type': 'integer', 'minimum': -1},
                 'distributedMemoryEntitlement': {
                     'type': 'integer', 'minimum': -1},
                 'ftLatencyStatus': {'type': 'string'},
@@ -164,25 +165,25 @@ def _random_vm_spec():
         'state': _random_string(10),
         'stats': {
             'balloonedMemory': random.randint(-1, 1000000),
-            'compressedMemory': random.randint(-1,1000000),
-            'consumedOverheadMemory': random.randint(-1,1000000),
-            'distributedCpuEntitlement': random.randint(-1,1000000),
-            'distributedMemoryEntitlement': random.randint(-1,1000000),
+            'compressedMemory': random.randint(-1, 1000000),
+            'consumedOverheadMemory': random.randint(-1, 1000000),
+            'distributedCpuEntitlement': random.randint(-1, 1000000),
+            'distributedMemoryEntitlement': random.randint(-1, 1000000),
             'ftLatencyStatus': _random_string(10),
-            'ftLogBandwidth': random.randint(-1,1000000),
-            'ftSecondaryLatency': random.randint(-1,1000000),
+            'ftLogBandwidth': random.randint(-1, 1000000),
+            'ftSecondaryLatency': random.randint(-1, 1000000),
             'guestHeartbeatStatus': _random_string(10),
-            'guestMemoryUsage': random.randint(-1,1000000),
-            'hostMemoryUsage': random.randint(-1,1000000),
-            'overallCpuDemand': random.randint(-1,1000000),
-            'overallCpuUsage': random.randint(-1,1000000),
-            'privateMemory': random.randint(-1,1000000),
-            'sharedMemory': random.randint(-1,1000000),
-            'ssdSwappedMemory': random.randint(-1,1000000),
-            'staticCpuEntitlement': random.randint(-1,1000000),
-            'staticMemoryEntitlement': random.randint(-1,1000000),
-            'swappedMemory': random.randint(-1,1000000),
-            'uptimeSeconds': random.randint(-1,1000000)
+            'guestMemoryUsage': random.randint(-1, 1000000),
+            'hostMemoryUsage': random.randint(-1, 1000000),
+            'overallCpuDemand': random.randint(-1, 1000000),
+            'overallCpuUsage': random.randint(-1, 1000000),
+            'privateMemory': random.randint(-1, 1000000),
+            'sharedMemory': random.randint(-1, 1000000),
+            'ssdSwappedMemory': random.randint(-1, 1000000),
+            'staticCpuEntitlement': random.randint(-1, 1000000),
+            'staticMemoryEntitlement': random.randint(-1, 1000000),
+            'swappedMemory': random.randint(-1, 1000000),
+            'uptimeSeconds': random.randint(-1, 1000000)
         }
     }
 
