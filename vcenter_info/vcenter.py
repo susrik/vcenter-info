@@ -2,6 +2,7 @@ import json
 import logging
 import re
 import ssl
+from multiprocessing import Process, Queue
 from pyVim.connect import SmartConnect, Disconnect
 from pyVmomi import vim
 import datetime
@@ -19,7 +20,7 @@ def vm_to_dict(vm):
         'path': config.vmPathName,
         'guest': config.guestFullName,
         'annotation': config.annotation,
-        'state': summary.runtime.powerState,
+        'state': str(summary.runtime.powerState),
         'overallStatus': str(summary.overallStatus),
         'ip': None,
         'question': None,
@@ -85,47 +86,102 @@ def vms_from_list(vmList, depth=0):
         yield vm
 
 
-def load_vms_from_datacenters(auth_config):
+def load_vms_from_datacenter(server_auth_config):
 
-    for dc in auth_config:
+    context = None
+    if hasattr(ssl, '_create_unverified_context'):
+        context = ssl._create_unverified_context()
 
-        context = None
-        if hasattr(ssl, '_create_unverified_context'):
-            context = ssl._create_unverified_context()
+    si = None
+    try:
+        port = server_auth_config.get('port', 443)
+        si = SmartConnect(
+            host=server_auth_config['hostname'],
+            port=port,
+            user=server_auth_config['username'],
+            pwd=server_auth_config['password'],
+            sslContext=context)
 
-        si = None
-        try:
-            port = dc.get('port', 443)
-            si = SmartConnect(
-                host=dc['hostname'],
-                port=port,
-                user=dc['username'],
-                pwd=dc['password'],
-                sslContext=context)
+        if not si:
+            print('error connecting to'
+                  f' {server_auth_config["hostname"]}:{port}')
+            return -1
 
-            if not si:
-                print(f'error connecting to {dc["hostname"]}:{port}')
-                return -1
+        content = si.RetrieveContent()
+        for datacenter in content.rootFolder.childEntity:
+            if hasattr(datacenter, 'vmFolder'):
+                yield {
+                    'datacenter': datacenter.name,
+                    'vms': vms_from_list(datacenter.vmFolder.childEntity)
+                }
 
-            content = si.RetrieveContent()
-            for datacenter in content.rootFolder.childEntity:
-                if hasattr(datacenter, 'vmFolder'):
-                    yield {
-                        'datacenter': datacenter.name,
-                        'vms': vms_from_list(datacenter.vmFolder.childEntity)
-                    }
-
-        finally:
-            if si:
-                Disconnect(si)
+    finally:
+        if si:
+            Disconnect(si)
 
 
-def get_vms(auth_config):
-    for dc in load_vms_from_datacenters(auth_config):
+def _get_vms_from_server_proc(queue, server_auth_config):
+    for dc in load_vms_from_datacenter(server_auth_config):
         for vm in dc['vms']:
             summary = vm_to_dict(vm)
             summary['datacenter'] = dc['datacenter']
-            yield summary
+            queue.put(summary)
+
+    # contract: send None to indicate end of processing
+    queue.put(None)
+
+
+def _get_vms_no_fork(auth_config):
+    """
+    for test coverage only
+    :param auth_config:
+    :return:
+    """
+    q = Queue()
+    for server in auth_config:
+        _get_vms_from_server_proc(q, server)
+        while True:
+            vm = q.get()
+            if vm:
+                yield vm
+            else:
+                # contract: None indicates end of processing
+                break
+
+
+def get_vms(auth_config, fork=True):
+    """
+    create a child process for each server
+
+    :param auth_config:
+    :return:
+    """
+
+    if not fork:
+        yield from _get_vms_no_fork(auth_config)
+        return
+
+    processes = []
+    q = Queue()
+
+    for server in auth_config:
+        p = Process(
+            target=_get_vms_from_server_proc,
+            args=(q, server))
+        p.start()
+        processes.append(p)
+
+    num_finished = 0
+    while num_finished < len(processes):
+        vm = q.get()
+        if vm:
+            yield vm
+        else:
+            # contract: None indicates end of processing
+            num_finished += 1
+
+    for p in processes:
+        p.join()
 
 
 if __name__ == "__main__":

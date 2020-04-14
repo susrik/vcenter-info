@@ -5,7 +5,7 @@ with open("README.md") as f:
 
 setup(
     name='vcenter-info',
-    version="0.0.3",
+    version="0.0.4",
     author='Erik Reid',
     author_email='nobody@nowhere.org',
     description='Simple view of vCenter data',
@@ -35,6 +35,6 @@ setup(
         'Operating System :: OS Independent',
         'Development Status :: 4 - Beta'
     ],
-    python_requires='>=3.5'
+    python_requires='>=3.6'
 )
 
