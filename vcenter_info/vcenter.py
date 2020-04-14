@@ -103,7 +103,8 @@ def load_vms_from_datacenter(server_auth_config):
             sslContext=context)
 
         if not si:
-            print(f'error connecting to {dc["hostname"]}:{port}')
+            print('error connecting to'
+                  f' {server_auth_config["hostname"]}:{port}')
             return -1
 
         content = si.RetrieveContent()
@@ -117,6 +118,7 @@ def load_vms_from_datacenter(server_auth_config):
     finally:
         if si:
             Disconnect(si)
+
 
 def _get_vms_from_server_proc(queue, server_auth_config):
     for dc in load_vms_from_datacenter(server_auth_config):
@@ -143,6 +145,7 @@ def _get_vms_no_fork(auth_config):
             if vm:
                 yield vm
             else:
+                # contract: None indicates end of processing
                 break
 
 
@@ -174,6 +177,7 @@ def get_vms(auth_config, fork=True):
         if vm:
             yield vm
         else:
+            # contract: None indicates end of processing
             num_finished += 1
 
     for p in processes:
