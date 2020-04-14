@@ -129,13 +129,35 @@ def _get_vms_from_server_proc(queue, server_auth_config):
     queue.put(None)
 
 
-def get_vms(auth_config):
+def _get_vms_no_fork(auth_config):
+    """
+    for test coverage only
+    :param auth_config:
+    :return:
+    """
+    q = Queue()
+    for server in auth_config:
+        _get_vms_from_server_proc(q, server)
+        while True:
+            vm = q.get()
+            if vm:
+                yield vm
+            else:
+                break
+
+
+def get_vms(auth_config, fork=True):
     """
     create a child process for each server
 
     :param auth_config:
     :return:
     """
+
+    if not fork:
+        yield from _get_vms_no_fork(auth_config)
+        return
+
     processes = []
     q = Queue()
 
