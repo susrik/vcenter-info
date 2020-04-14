@@ -121,7 +121,8 @@ def dummy_json_file():
 
 
 def test_vcenter_content_parsing(mocked_vcenter, auth_config):
-    values = vcenter.get_vms(auth_config)
+    # don't fork for one test, for coverage
+    values = vcenter.get_vms(auth_config, fork=False)
     jsonschema.validate(list(values), VMLIST_SCHEMA)
 
 
