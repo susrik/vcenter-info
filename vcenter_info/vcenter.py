@@ -2,6 +2,7 @@ import json
 import logging
 import re
 import ssl
+from multiprocessing import Process, Queue
 from pyVim.connect import SmartConnect, Disconnect
 from pyVmomi import vim
 import datetime
@@ -19,7 +20,7 @@ def vm_to_dict(vm):
         'path': config.vmPathName,
         'guest': config.guestFullName,
         'annotation': config.annotation,
-        'state': summary.runtime.powerState,
+        'state': str(summary.runtime.powerState),
         'overallStatus': str(summary.overallStatus),
         'ip': None,
         'question': None,
@@ -117,14 +118,44 @@ def load_vms_from_datacenter(server_auth_config):
         if si:
             Disconnect(si)
 
+def _get_vms_from_server_proc(queue, server_auth_config):
+    for dc in load_vms_from_datacenter(server_auth_config):
+        for vm in dc['vms']:
+            summary = vm_to_dict(vm)
+            summary['datacenter'] = dc['datacenter']
+            queue.put(summary)
+
+    # contract: send None to indicate end of processing
+    queue.put(None)
+
 
 def get_vms(auth_config):
+    """
+    create a child process for each server
+
+    :param auth_config:
+    :return:
+    """
+    processes = []
+    q = Queue()
+
     for server in auth_config:
-        for dc in load_vms_from_datacenter(server):
-            for vm in dc['vms']:
-                summary = vm_to_dict(vm)
-                summary['datacenter'] = dc['datacenter']
-                yield summary
+        p = Process(
+            target=_get_vms_from_server_proc,
+            args=(q, server))
+        p.start()
+        processes.append(p)
+
+    num_finished = 0
+    while num_finished < len(processes):
+        vm = q.get()
+        if vm:
+            yield vm
+        else:
+            num_finished += 1
+
+    for p in processes:
+        p.join()
 
 
 if __name__ == "__main__":
