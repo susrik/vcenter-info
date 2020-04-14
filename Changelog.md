@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.0.4] - 2020-04-14
+- connect to all servers in parallel
+
 ## [0.0.3] - 2020-04-13
 - added state-based styling to ui rows
 
