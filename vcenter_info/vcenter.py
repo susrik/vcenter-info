@@ -85,47 +85,46 @@ def vms_from_list(vmList, depth=0):
         yield vm
 
 
-def load_vms_from_datacenters(auth_config):
+def load_vms_from_datacenter(server_auth_config):
 
-    for dc in auth_config:
+    context = None
+    if hasattr(ssl, '_create_unverified_context'):
+        context = ssl._create_unverified_context()
 
-        context = None
-        if hasattr(ssl, '_create_unverified_context'):
-            context = ssl._create_unverified_context()
+    si = None
+    try:
+        port = server_auth_config.get('port', 443)
+        si = SmartConnect(
+            host=server_auth_config['hostname'],
+            port=port,
+            user=server_auth_config['username'],
+            pwd=server_auth_config['password'],
+            sslContext=context)
 
-        si = None
-        try:
-            port = dc.get('port', 443)
-            si = SmartConnect(
-                host=dc['hostname'],
-                port=port,
-                user=dc['username'],
-                pwd=dc['password'],
-                sslContext=context)
+        if not si:
+            print(f'error connecting to {dc["hostname"]}:{port}')
+            return -1
 
-            if not si:
-                print(f'error connecting to {dc["hostname"]}:{port}')
-                return -1
+        content = si.RetrieveContent()
+        for datacenter in content.rootFolder.childEntity:
+            if hasattr(datacenter, 'vmFolder'):
+                yield {
+                    'datacenter': datacenter.name,
+                    'vms': vms_from_list(datacenter.vmFolder.childEntity)
+                }
 
-            content = si.RetrieveContent()
-            for datacenter in content.rootFolder.childEntity:
-                if hasattr(datacenter, 'vmFolder'):
-                    yield {
-                        'datacenter': datacenter.name,
-                        'vms': vms_from_list(datacenter.vmFolder.childEntity)
-                    }
-
-        finally:
-            if si:
-                Disconnect(si)
+    finally:
+        if si:
+            Disconnect(si)
 
 
 def get_vms(auth_config):
-    for dc in load_vms_from_datacenters(auth_config):
-        for vm in dc['vms']:
-            summary = vm_to_dict(vm)
-            summary['datacenter'] = dc['datacenter']
-            yield summary
+    for server in auth_config:
+        for dc in load_vms_from_datacenter(server):
+            for vm in dc['vms']:
+                summary = vm_to_dict(vm)
+                summary['datacenter'] = dc['datacenter']
+                yield summary
 
 
 if __name__ == "__main__":
